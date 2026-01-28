@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修仙模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #ffd700;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .current-method {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ffd700;
+        }
+
+        .current-method-label {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .current-method-value {
+            color: #ffd700;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .equipment-section {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .equipment-title {
+            color: #ffd700;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .bonus-display {
+            font-size: 0.75rem;
+            color: #aaa;
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .bonus-display span {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .equipped-slots {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+
+        .equip-slot {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.7rem;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-all;
+        }
+
+        .equip-slot.occupied {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+            color: #ffd700;
+        }
+
+        .equip-slot.empty {
+            color: #666;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #ffd700;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .realm {
+            grid-column: span 2;
+            text-align: center;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+        }
+
+        .realm-value {
+            color: #ffd700;
+            font-size: 1.4rem;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            transition: width 0.3s ease;
+        }
+
+        .health-fill {
+            background: linear-gradient(90deg, #ff4444, #ff6666);
+        }
+
+        .age-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn.cultivate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .action-btn.explore {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .action-btn.rest {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .action-btn.items {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .action-btn.methods {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+        }
+
+        .action-btn.practice {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .log-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #222;
+        }
+
+        .log-entry.good {
+            color: #4CAF50;
+        }
+
+        .log-entry.bad {
+            color: #f44336;
+        }
+
+        .log-entry.special {
+            color: #ffd700;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            width: 95%;
+        }
+
+        .modal-title {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .item-list, .method-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item, .method {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .method.active {
+            border: 2px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-name, .method-name {
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 1.1rem;
+        }
+
+        .item-name.equipped {
+            color: #4CAF50;
+        }
+
+        .item-desc, .method-desc {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        .item-effects {
+            font-size: 0.85rem;
+            color: #4CAF50;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .use-btn, .equip-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .equip-btn {
+            background: #4CAF50;
+        }
+
+        .select-btn {
+            background: #2196F3;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .close-btn {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #1a1a2e;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+            font-weight: bold;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-content {
+            font-size: 1rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px solid #f44336;
+            margin: 20px 0;
+        }
+
+        .game-over h2 {
+            color: #f44336;
+            margin-bottom: 10px;
+        }
+
+        .restart-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .new-item-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            z-index: 1002;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            display: none;
+            max-width: 90%;
+            animation: popIn 0.5s ease;
+        }
+
+        .new-item-alert.show {
+            display: block;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .alert-title {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .alert-item-name {
+            color: #4CAF50;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .alert-item-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .alert-btn {
+            background: #ffd700;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .method-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .method-badge {
+            background: #4CAF50;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+
+        .event-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1003;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .event-modal.show {
+            display: flex;
+        }
+
+        .event-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            animation: eventPop 0.4s ease;
+        }
+
+        @keyframes eventPop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .event-title {
+            color: #ffd700;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .event-description {
+            color: #e8e8e8;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .event-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .event-option {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            border: 2px solid #667eea;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .event-option:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .event-option:active {
+            transform: translateY(0);
+        }
+
+        .event-option-text {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .event-option-risk {
+            color: #f44336;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .event-option-reward {
+            color: #4CAF50;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>修仙模拟器</h1>
+            <p class="subtitle">凡人修仙传</p>
+        </div>
+
+        <div class="current-method">
+            <div class="current-method-label">当前功法</div>
+            <div class="current-method-value" id="current-method">无</div>
+        </div>
+
+        <div class="equipment-section">
+            <div class="equipment-title">已装备法宝 (<span id="equipped-count">0</span>/10)</div>
+            <div class="equipped-slots" id="equipment-slots">
+            </div>
+            <div class="bonus-display" id="bonus-display">
+                当前加成：暂无装备
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">生命</div>
+                <div class="stat-value" id="health">100/100</div>
+                <div class="progress-bar">
+                    <div class="progress-fill health-fill" id="health-bar" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">寿元</div>
+                <div class="stat-value" id="age">16岁</div>
+                <div class="progress-bar">
+                    <div class="progress-fill age-fill" id="age-bar" style="width: 16%"></div>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">修为</div>
+                <div class="stat-value" id="cultivation">0</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="cultivation-bar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">威望</div>
+                <div class="stat-value" id="reputation">0</div>
+            </div>
+
+            <div class="stat-item realm">
+                <div class="stat-label">境界</div>
+                <div class="stat-value realm-value" id="realm">凡人</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="action-btn cultivate" onclick="cultivate()">修炼自身</button>
+            <button class="action-btn practice" onclick="practiceMethod()">修炼功法</button>
+            <button class="action-btn explore" onclick="explore()">探索</button>
+            <button class="action-btn rest" onclick="rest()">疗伤</button>
+            <button class="action-btn items" onclick="showItems()">法宝背包</button>
+            <button class="action-btn methods" style="grid-column: span 2;" onclick="showMethods()">功法图鉴</button>
+        </div>
+
+        <div class="log">
+            <div class="log-title">修仙日志</div>
+            <div id="log-content"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="items-modal">
+        <div class="modal-content">
+            <div class="modal-title">法宝背包</div>
+            <div class="item-list" id="items-list"></div>
+            <button class="close-btn" onclick="closeModal('items-modal')">关闭</button>
+        </div>
+    </div>
+
+    <div class="modal" id="methods-modal">
+        <div class="modal-content">
+            <div class="modal-title">功法图鉴</div>
+            <div class="method-list" id="methods-list"></div>
+            <button class="close-btn" onclick="closeModal('methods-modal')">关闭</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div class="notification-content"></div>
+    </div>
+
+    <div class="new-item-alert" id="new-item-alert">
+        <div class="alert-title">🎉 恭喜获得新功法！</div>
+        <div class="alert-item-name" id="alert-item-name"></div>
+        <div class="alert-item-desc" id="alert-item-desc"></div>
+        <button class="alert-btn" onclick="closeNewAlert()">确定</button>
+    </div>
+
+    <div class="event-modal" id="event-modal">
+        <div class="event-content">
+            <div class="event-title" id="event-title"></div>
+            <div class="event-description" id="event-description"></div>
+            <div class="event-options" id="event-options"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameState = {
+            health: 100,
+            maxHealth: 100,
+            age: 16,
+            maxAge: 150,
+            cultivation: 0,
+            maxCultivation: 100,
+            reputation: 0,
+            realm: 0,
+            realmNames: ['凡人', '炼气期一层', '炼气期二层', '炼气期三层', '炼气期四层', '炼气期五层', 
+                        '炼气期六层', '炼气期七层', '炼气期八层', '炼气期九层', '炼气期圆满',
+                        '筑基初期', '筑基中期', '筑基后期', '筑基圆满',
+                        '结丹初期', '结丹中期', '结丹后期', '结丹圆满',
+                        '元婴初期', '元婴中期', '元婴后期', '元婴大圆满',
+                        '化神期', '炼虚期', '合体期', '大乘期', '渡劫期', '飞升'],
+            items: [],
+            equippedItems: [],
+            currentMethod: null,
+            learnedMethods: [],
+            methodLevels: {},
+            isGameOver: false
+        };
+
+        const methodDatabase = [
+            { id: 1, name: '基础吐纳法', desc: '最基础的入门功法，适合初学者修炼', effects: ['修为获取+50%', '寿元消耗-20%'], cultivationBonus: 1.5, ageBonus: 0.8, healBonus: 1.2 },
+            { id: 2, name: '长春功', desc: '温和养生的功法，注重延年益寿', effects: ['修为获取+40%', '寿元消耗-70%', '疗伤效果+60%', '生命上限+80'], cultivationBonus: 1.4, ageBonus: 0.3, healBonus: 1.6, healthBonus: 80 },
+            { id: 3, name: '炼体决', desc: '强身健体的炼体功法，提升生命上限', effects: ['修为获取+35%', '生命上限+120', '受伤减少55%', '疗伤效果+40%'], cultivationBonus: 1.35, healthBonus: 120, defenseBonus: 0.45, healBonus: 1.4 },
+            { id: 4, name: '聚灵功', desc: '汇聚天地灵气的功法，修炼速度快', effects: ['修为获取+80%', '突破成功率+30%', '探索收益+30%'], cultivationBonus: 1.8, breakthroughBonus: 1.3, exploreBonus: 1.3 },
+            { id: 5, name: '五行遁术', desc: '包含金木水火土五行元素的功法', effects: ['探索收益+80%', '修为获取+50%', '寿元消耗-30%'], exploreBonus: 1.8, cultivationBonus: 1.5, ageBonus: 0.7 },
+            { id: 6, name: '青元剑诀', desc: '青元门绝学，剑气凌厉', effects: ['修为获取+70%', '探索收益+75%', '威望获取+50%', '受伤减少20%'], cultivationBonus: 1.7, exploreBonus: 1.75, reputationBonus: 1.5, defenseBonus: 0.8 },
+            { id: 7, name: '大衍决', desc: '修炼神魂的绝世功法', effects: ['修为获取+90%', '突破成功率+40%', '探索收益+40%', '疗伤效果+30%'], cultivationBonus: 1.9, breakthroughBonus: 1.4, exploreBonus: 1.4, healBonus: 1.3 },
+            { id: 8, name: '三转重元功', desc: '古宝所炼制的特殊功法', effects: ['修为获取+60%', '疗伤效果+80%', '寿元消耗-60%', '生命上限+60'], cultivationBonus: 1.6, healBonus: 1.8, ageBonus: 0.4, healthBonus: 60 },
+            { id: 9, name: '梵圣真魔功', desc: '魔道顶级功法，威力惊人', effects: ['修为获取+120%', '突破成功率+50%', '探索收益+50%', '寿元消耗-20%'], cultivationBonus: 2.2, breakthroughBonus: 1.5, exploreBonus: 1.5, ageBonus: 0.8 },
+            { id: 10, name: '元磁神光', desc: '利用元磁之力修炼', effects: ['修为获取+80%', '受伤减少50%', '探索收益+70%', '疗伤效果+40%'], cultivationBonus: 1.8, defenseBonus: 0.5, exploreBonus: 1.7, healBonus: 1.4 },
+            { id: 11, name: '大庚剑阵', desc: '剑阵类功法，攻击力强大', effects: ['探索收益+120%', '威望获取+90%', '修为获取+70%', '受伤减少25%'], exploreBonus: 2.2, reputationBonus: 1.9, cultivationBonus: 1.7, defenseBonus: 0.75 },
+            { id: 12, name: '辟邪神雷', desc: '雷属性功法，克制魔物', effects: ['修为获取+90%', '探索收益+100%', '受伤减少40%', '突破成功率+20%'], cultivationBonus: 1.9, exploreBonus: 2.0, defenseBonus: 0.6, breakthroughBonus: 1.2 },
+            { id: 13, name: '紫府神功', desc: '修炼紫府元婴的无上功法', effects: ['修为获取+110%', '突破成功率+50%', '寿元消耗-30%', '威望获取+40%'], cultivationBonus: 2.1, breakthroughBonus: 1.5, ageBonus: 0.7, reputationBonus: 1.4 },
+            { id: 14, name: '青竹蜂云剑', desc: '剑道绝学，剑气纵横', effects: ['探索收益+130%', '威望获取+80%', '修为获取+90%', '受伤减少30%'], exploreBonus: 2.3, reputationBonus: 1.8, cultivationBonus: 1.9, defenseBonus: 0.7 },
+            { id: 15, name: '玄魂炼妖决', desc: '利用妖兽灵魂修炼', effects: ['修为获取+130%', '探索收益+90%', '寿元消耗-25%', '突破成功率+30%'], cultivationBonus: 2.3, exploreBonus: 1.9, ageBonus: 0.75, breakthroughBonus: 1.3 },
+            { id: 16, name: '七十二地煞术', desc: '神通类功法，变化无穷', effects: ['探索收益+150%', '威望获取+110%', '修为获取+100%', '寿元消耗-20%'], exploreBonus: 2.5, reputationBonus: 2.1, cultivationBonus: 2.0, ageBonus: 0.8 },
+            { id: 17, name: '百鬼夜行术', desc: '鬼道功法，诡异莫测', effects: ['修为获取+140%', '探索收益+110%', '受伤减少50%', '疗伤效果+60%'], cultivationBonus: 2.4, exploreBonus: 2.1, defenseBonus: 0.5, healBonus: 1.6 },
+            { id: 18, name: '天魔策', desc: '天魔功法，威力无穷', effects: ['修为获取+180%', '突破成功率+70%', '寿元消耗-40%', '探索收益+80%'], cultivationBonus: 2.8, breakthroughBonus: 1.7, ageBonus: 0.6, exploreBonus: 1.8 },
+            { id: 19, name: '万象功', desc: '万象包容，道法自然', effects: ['修为获取+150%', '疗伤效果+100%', '寿元消耗-50%', '生命上限+100', '受伤减少35%'], cultivationBonus: 2.5, healBonus: 2.0, ageBonus: 0.5, healthBonus: 100, defenseBonus: 0.65 },
+            { id: 20, name: '小五行剑阵', desc: '五行剑阵类功法', effects: ['探索收益+110%', '修为获取+100%', '威望获取+70%', '突破成功率+35%'], exploreBonus: 2.1, cultivationBonus: 2.0, reputationBonus: 1.7, breakthroughBonus: 1.35 }
+        ];
+
+        const itemDatabase = [
+            { id: 1, name: '青木丹', desc: '恢复120点生命', effect: 'health', value: 120 },
+            { id: 2, name: '聚气丹', desc: '增加200点修为', effect: 'cultivation', value: 200 },
+            { id: 3, name: '延寿丹', desc: '增加30年寿元', effect: 'age', value: 30 },
+            { id: 4, name: '飞剑', desc: '攻击法宝，探索收益+80%', effect: 'equip', exploreBonus: 1.8 },
+            { id: 5, name: '护心镜', desc: '防护法宝，受伤减少65%', effect: 'equip', defenseBonus: 0.35 },
+            { id: 6, name: '灵石', desc: '珍贵货币，威望+120', effect: 'wealth', reputationBonus: 120 },
+            { id: 7, name: '筑基丹', desc: '突破筑基期必备，突破成功率+80%', effect: 'equip', breakthroughBonus: 1.8 },
+            { id: 8, name: '结金丹', desc: '突破结丹期必备，突破成功率+90%', effect: 'equip', breakthroughBonus: 1.9 },
+            { id: 9, name: '元婴丹', desc: '突破元婴期必备，突破成功率+100%', effect: 'equip', breakthroughBonus: 2.0 },
+            { id: 10, name: '混元金斗', desc: '顶级法宝，修为获取+100%', effect: 'equip', cultivationBonus: 2.0 },
+            { id: 11, name: '金蛟剪', desc: '攻击法宝，探索收益+100%', effect: 'equip', exploreBonus: 2.0 },
+            { id: 12, name: '翻天印', desc: '攻击法宝，威望获取+100%', effect: 'equip', reputationBonus: 2.0 },
+            { id: 13, name: '九龙神火罩', desc: '防护法宝，受伤减少75%', effect: 'equip', defenseBonus: 0.25 },
+            { id: 14, name: '太极图', desc: '顶级法宝，全属性提升+80%', effect: 'equip', allBonus: 1.8 },
+            { id: 15, name: '青竹蜂云剑', desc: '剑法法宝，探索收益+90%', effect: 'equip', exploreBonus: 1.9 },
+            { id: 16, name: '神风舟', desc: '飞行法宝，探索收益+85%', effect: 'equip', exploreBonus: 1.85 },
+            { id: 17, name: '辟邪神雷', desc: '雷属性法宝，威望获取+95%', effect: 'equip', reputationBonus: 1.95 },
+            { id: 18, name: '紫电霜华剑', desc: '剑中极品，修为获取+95%', effect: 'equip', cultivationBonus: 1.95 },
+            { id: 19, name: '乾坤圈', desc: '防护法宝，生命上限+150', effect: 'equip', healthBonus: 150 },
+            { id: 20, name: '混天绫', desc: '防护法宝，受伤减少70%', effect: 'equip', defenseBonus: 0.3 },
+            { id: 21, name: '元磁神山', desc: '攻击法宝，探索收益+110%', effect: 'equip', exploreBonus: 2.1 },
+            { id: 22, name: '大衍决', desc: '特殊法宝，修为获取+90%', effect: 'equip', cultivationBonus: 1.9 },
+            { id: 23, name: '虚天鼎', desc: '鼎类法宝，威望获取+110%', effect: 'equip', reputationBonus: 2.1 },
+            { id: 24, name: '八荒火龙', desc: '火属性法宝，探索收益+95%', effect: 'equip', exploreBonus: 1.95 },
+            { id: 25, name: '黑煞旗', desc: '魔道法宝，威望获取+100%', effect: 'equip', reputationBonus: 2.0 },
+            { id: 26, name: '五龙铡', desc: '攻击法宝，探索收益+90%', effect: 'equip', exploreBonus: 1.9 },
+            { id: 27, name: '土遁符', desc: '辅助法宝，探索收益+80%', effect: 'equip', exploreBonus: 1.8 },
+            { id: 28, name: '聚灵阵', desc: '阵法法宝，修为获取+85%', effect: 'equip', cultivationBonus: 1.85 },
+            { id: 29, name: '小挪移令', desc: '空间法宝，探索收益+120%', effect: 'equip', exploreBonus: 2.2 },
+            { id: 30, name: '青冥针', desc: '暗器法宝，威望获取+90%', effect: 'equip', reputationBonus: 1.9 }
+        ];
+
+        const interactiveEvents = [
+            {
+                title: '受伤的修仙者',
+                description: '你遇到一个浑身是血的修仙者倒在地上，似乎遭遇了伏击。',
+                options: [
+                    {
+                        text: '出手相助',
+                        reward: { cultivation: 150, reputation: 50 },
+                        risk: { health: 10 },
+                        riskText: '可能被仇家发现',
+                        rewardText: '获得大量修为和威望',
+                        message: '你成功救助了这位修仙者，他感激地赠送你一本秘籍，修为大增！'
+                    },
+                    {
+                        text: '置之不理',
+                        reward: { cultivation: 50 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '获得少量修为',
+                        message: '你选择离开，继续自己的修炼之路。'
+                    },
+                    {
+                        text: '趁机抢劫',
+                        reward: { reputation: 100 },
+                        risk: { health: 40 },
+                        riskText: '可能被反噬',
+                        rewardText: '获得大量威望',
+                        message: '你搜刮了他的储物袋，获得不少宝物！'
+                    }
+                ]
+            },
+            {
+                title: '神秘洞府',
+                description: '你发现了一处隐蔽的古洞府，洞口有禁制闪烁，似乎有人在里面修炼。',
+                options: [
+                    {
+                        text: '强行突破',
+                        reward: { cultivation: 200, method: true },
+                        risk: { health: 50, cultivation: 30 },
+                        riskText: '禁制反噬，可能重伤',
+                        rewardText: '有机会获得顶级功法',
+                        message: '你冲破了禁制，发现了前人留下的传承！'
+                    },
+                    {
+                        text: '寻找其他入口',
+                        reward: { cultivation: 100, reputation: 30 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '稳妥获得奖励',
+                        message: '你绕道找到了入口，获得了一些灵草。'
+                    },
+                    {
+                        text: '放弃离开',
+                        reward: { health: 20 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '恢复少量生命',
+                        message: '你决定不打扰他人，继续赶路。'
+                    }
+                ]
+            },
+            {
+                title: '妖兽幼崽',
+                description: '你遇到一只受伤的妖兽幼崽，它警惕地看着你，周围没有母兽的身影。',
+                options: [
+                    {
+                        text: '收养驯化',
+                        reward: { item: true, reputation: 80 },
+                        risk: { health: 25 },
+                        riskText: '幼崽可能攻击',
+                        rewardText: '获得法宝和威望',
+                        message: '你成功驯化了它，获得了一件法宝！'
+                    },
+                    {
+                        text: '斩杀取丹',
+                        reward: { cultivation: 120, health: 30 },
+                        risk: { reputation: 20 },
+                        riskText: '威望降低',
+                        rewardText: '获得大量修为和治疗',
+                        message: '你取走了妖丹，修为提升。'
+                    },
+                    {
+                        text: '放生离开',
+                        reward: { reputation: 60 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '获得威望',
+                        message: '你选择了仁慈，修仙路漫漫，不做恶事。'
+                    }
+                ]
+            },
+            {
+                title: '秘境机缘',
+                description: '你误入一处秘境，眼前出现了一座古老的祭坛，祭坛上放着三件宝物。',
+                options: [
+                    {
+                        text: '拿取金色宝物',
+                        reward: { cultivation: 180, method: true },
+                        risk: { health: 35 },
+                        riskText: '祭坛可能护主',
+                        rewardText: '获得顶级功法',
+                        message: '金色宝物化作一道功法融入你的脑海！'
+                    },
+                    {
+                        text: '拿取蓝色宝物',
+                        reward: { item: true, reputation: 60 },
+                        risk: { health: 15 },
+                        riskText: '轻微反噬',
+                        rewardText: '获得法宝',
+                        message: '蓝色宝物变成了一件法宝！'
+                    },
+                    {
+                        text: '拿取绿色宝物',
+                        reward: { health: 80, cultivation: 60 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '大量治疗和修为',
+                        message: '绿色宝物化作药力，你感觉身体大好。'
+                    }
+                ]
+            },
+            {
+                title: '魔修交易',
+                description: '一个黑衣人拦住你，他自称是魔修，愿意用功法交换你的修为。',
+                options: [
+                    {
+                        text: '交换功法',
+                        reward: { method: true, cultivation: 100 },
+                        risk: { cultivation: 80 },
+                        riskText: '消耗大量修为',
+                        rewardText: '获得魔道功法',
+                        message: '他传授了你一门魔道功法，修为虽有消耗，但值得。'
+                    },
+                    {
+                        text: '拒绝并攻击',
+                        reward: { reputation: 100, cultivation: 50 },
+                        risk: { health: 45 },
+                        riskText: '可能受伤',
+                        rewardText: '威望和修为提升',
+                        message: '你击败了魔修，正邪不两立！'
+                    },
+                    {
+                        text: '虚与委蛇',
+                        reward: { reputation: 40 },
+                        risk: { cultivation: 20 },
+                        riskText: '消耗少量修为',
+                        rewardText: '获得少量威望',
+                        message: '你巧妙地脱身，修为有所损失。'
+                    }
+                ]
+            },
+            {
+                title: '天劫降临',
+                description: '你感到天空异变，雷云密布，似乎有人在此渡劫，天劫之力波及到了你。',
+                options: [
+                    {
+                        text: '硬抗天劫',
+                        reward: { cultivation: 250, reputation: 100 },
+                        risk: { health: 60, cultivation: 50 },
+                        riskText: '可能重伤且修为倒退',
+                        rewardText: '大量修为和威望',
+                        message: '你硬抗住天劫，虽然受伤，但修为大进！'
+                    },
+                    {
+                        text: '躲避天劫',
+                        reward: {},
+                        risk: { health: 30 },
+                        riskText: '仍可能受伤',
+                        rewardText: '无奖励',
+                        message: '你躲了起来，但还是被波及受了轻伤。'
+                    },
+                    {
+                        text: '趁机修炼',
+                        reward: { cultivation: 150 },
+                        risk: { health: 50, cultivation: 30 },
+                        riskText: '受伤且修为可能倒退',
+                        rewardText: '大量修为',
+                        message: '你利用天劫之力修炼，虽有损伤但收获颇丰。'
+                    }
+                ]
+            },
+            {
+                title: '上古战场',
+                description: '你发现了一处上古战场的遗迹，残垣断壁间隐约可见宝光闪烁。',
+                options: [
+                    {
+                        text: '深入探索',
+                        reward: { item: true, method: true, cultivation: 100 },
+                        risk: { health: 55, cultivation: 40 },
+                        riskText: '可能触发禁制',
+                        rewardText: '获得法宝、功法和修为',
+                        message: '你发现了前人的传承，收获满满！'
+                    },
+                    {
+                        text: '外围搜索',
+                        reward: { item: true, cultivation: 60 },
+                        risk: { health: 20 },
+                        riskText: '轻微风险',
+                        rewardText: '获得法宝和修为',
+                        message: '你在外围找到了一些宝物。'
+                    },
+                    {
+                        text: '观望后离开',
+                        reward: { health: 10 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '少量治疗',
+                        message: '你选择谨慎行事，继续赶路。'
+                    }
+                ]
+            },
+            {
+                title: '宗门招募',
+                description: '一位宗门使者邀请你加入他们的门派，承诺给你功法和资源。',
+                options: [
+                    {
+                        text: '加入宗门',
+                        reward: { method: true, cultivation: 80, reputation: 80 },
+                        risk: { age: 5 },
+                        riskText: '宗门规矩，消耗寿元',
+                        rewardText: '获得功法、修为和威望',
+                        message: '你加入了宗门，获得了良好的修炼资源。'
+                    },
+                    {
+                        text: '拒绝并离开',
+                        reward: { cultivation: 40 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '获得少量修为',
+                        message: '你选择独自修炼，不受束缚。'
+                    },
+                    {
+                        text: '索要好处后加入',
+                        reward: { method: true, item: true, cultivation: 100 },
+                        risk: { reputation: 30, age: 8 },
+                        riskText: '名声受损，消耗更多寿元',
+                        rewardText: '获得功法、法宝和修为',
+                        message: '你成功索要了好处，但名声略有受损。'
+                    }
+                ]
+            },
+            {
+                title: '秘境试炼',
+                description: '你发现了一处试炼之地，入口写着"通过试炼者可得仙缘"。',
+                options: [
+                    {
+                        text: '接受试炼',
+                        reward: { method: true, cultivation: 200, reputation: 100 },
+                        risk: { health: 45, cultivation: 30 },
+                        riskText: '试炼失败可能受伤',
+                        rewardText: '获得顶级功法、大量修为和威望',
+                        message: '你成功通过试炼，获得了传承！'
+                    },
+                    {
+                        text: '观察后离开',
+                        reward: { cultivation: 50 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '获得少量修为',
+                        message: '你选择了稳妥行事。'
+                    },
+                    {
+                        text: '寻找其他机会',
+                        reward: { item: true, reputation: 40 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '获得法宝和威望',
+                        message: '你在试炼之地外发现了一些宝物。'
+                    }
+                ]
+            },
+            {
+                title: '神兽幼崽',
+                description: '你遇到一只幼小的神兽，它似乎刚刚破壳而出，虚弱地望着你。',
+                options: [
+                    {
+                        text: '精心照料',
+                        reward: { item: true, health: 60, reputation: 100 },
+                        risk: { age: 3 },
+                        riskText: '消耗寿元',
+                        rewardText: '获得顶级法宝、治疗和威望',
+                        message: '神兽长大后赠送你了一件法宝！'
+                    },
+                    {
+                        text: '立即斩杀',
+                        reward: { cultivation: 150, health: 40 },
+                        risk: { reputation: 50 },
+                        riskText: '威望大幅降低',
+                        rewardText: '大量修为和治疗',
+                        message: '你获得了神兽的内丹，但名声受损。'
+                    },
+                    {
+                        text: '放生祝福',
+                        reward: { cultivation: 80, reputation: 120 },
+                        risk: {},
+                        riskText: '无风险',
+                        rewardText: '修为和大量威望',
+                        message: '神兽临走前给了你一道祝福，修为提升。'
+                    }
+                ]
+            }
+        ];
+
+        const randomEvents = [
+            { text: '遇到一个受伤的修仙者，救助后获得奖励', effect: 'good', type: 'help', cultivation: 50, reputation: 20 },
+            { text: '发现一处灵泉，吸收灵气修为大增', effect: 'good', type: 'spring', cultivation: 80, health: 25 },
+            { text: '遇到妖兽袭击，受了些伤', effect: 'bad', type: 'beast', health: 18 },
+            { text: '捡到一本修炼秘籍', effect: 'good', type: 'book', cultivation: 120 },
+            { text: '遭遇仇家伏击', effect: 'bad', type: 'ambush', health: 25, reputation: 12 },
+            { text: '发现天材地宝', effect: 'good', type: 'treasure', item: true },
+            { text: '误入禁地，受到反噬', effect: 'bad', type: 'forbidden', health: 22, cultivation: 20 },
+            { text: '参加宗门大比，获得威望', effect: 'good', type: 'competition', reputation: 40 },
+            { text: '遭遇心魔，修炼受阻', effect: 'bad', type: 'demon', cultivation: 25, health: 12 },
+            { text: '遇到仙人指路，获得感悟', effect: 'good', type: 'immortal', cultivation: 100, maxCultivation: 25 },
+            { text: '进入坊市，购买到灵丹妙药', effect: 'good', type: 'market', health: 35, cultivation: 30 },
+            { text: '遇到高阶修士切磋，获益匪浅', effect: 'good', type: 'sparring', cultivation: 60, reputation: 25 },
+            { text: '发现一处古洞府', effect: 'good', type: 'cave', cultivation: 90, reputation: 20 },
+            { text: '遭遇修仙界争斗，被波及', effect: 'bad', type: 'battle', health: 20 },
+            { text: '捡到他人遗失的储物袋', effect: 'good', type: 'bag', reputation: 30 },
+            { text: '遇到丹师，学习炼丹之道', effect: 'good', type: 'alchemy', cultivation: 50, reputation: 15 },
+            { text: '进入秘境，获得机缘', effect: 'good', type: 'secret', cultivation: 100, health: 30, reputation: 25 },
+            { text: '遭遇天劫考验', effect: 'bad', type: 'tribulation', health: 28, cultivation: 25 },
+            { text: '遇到妖兽，成功斩杀', effect: 'good', type: 'beast_kill', reputation: 30, health: 15 },
+            { text: '发现灵药园，采摘灵药', effect: 'good', type: 'herb', cultivation: 70, health: 25 },
+            { text: '遇到魔修，一番激战', effect: 'bad', type: 'demon_fight', health: 22, reputation: 18 },
+            { text: '进入拍卖会，拍得宝物', effect: 'good', type: 'auction', reputation: 50, item: true },
+            { text: '发现上古遗迹', effect: 'good', type: 'ruins', cultivation: 120, reputation: 30 },
+            { text: '遭遇空间裂缝', effect: 'bad', type: 'rift', health: 25, cultivation: 18 },
+            { text: '遇到散修前辈，传授功法', effect: 'good', type: 'loose_cultivator', method: true },
+            { text: '参加修仙大会，获得认可', effect: 'good', type: 'assembly', reputation: 55, cultivation: 40 },
+            { text: '发现矿脉，开采灵石', effect: 'good', type: 'mine', reputation: 35 },
+            { text: '遭遇兽潮', effect: 'bad', type: 'beast_wave', health: 30 },
+            { text: '进入幻境，磨练心境', effect: 'good', type: 'illusion', cultivation: 80, health: 8 }
+        ];
+
+        const cultivationTips = [
+            '天地灵气入体，丹田充盈',
+            '炼精化气，修为精进',
+            '心无杂念，道心稳固',
+            '吐纳天地灵气，炼精化神',
+            '感悟天道，突破瓶颈',
+            '闭关修炼，修为大进',
+            '气沉丹田，运转周天',
+            '凝神聚气，神思清明',
+            '阴阳调和，气息绵长',
+            '心如止水，道心如铁'
+        ];
+
+        function getMethodBonus(type) {
+            const method = gameState.currentMethod ? methodDatabase.find(m => m.id === gameState.currentMethod) : null;
+            if (!method) return 1;
+
+            const level = gameState.methodLevels[gameState.currentMethod] || 1;
+            const levelMultiplier = 1 + (level - 1) * 0.1;
+
+            const bonuses = {
+                cultivation: (method.cultivationBonus || 1) * levelMultiplier,
+                age: method.ageBonus || 1,
+                health: (method.healBonus || 1) * levelMultiplier,
+                defense: method.defenseBonus || 1,
+                explore: (method.exploreBonus || 1) * levelMultiplier,
+                reputation: (method.reputationBonus || 1) * levelMultiplier,
+                breakthrough: (method.breakthroughBonus || 1) * levelMultiplier
+            };
+
+            return bonuses[type] || 1;
+        }
+
+        function getItemBonuses() {
+            let bonuses = {
+                cultivation: 1,
+                age: 1,
+                health: 1,
+                defense: 1,
+                explore: 1,
+                reputation: 1,
+                breakthrough: 1,
+                maxHealth: 0
+            };
+
+            gameState.equippedItems.forEach(item => {
+                if (item.allBonus) {
+                    bonuses.cultivation *= item.allBonus;
+                    bonuses.explore *= item.allBonus;
+                    bonuses.reputation *= item.allBonus;
+                    bonuses.defense *= item.allBonus;
+                } else {
+                    if (item.cultivationBonus) bonuses.cultivation *= item.cultivationBonus;
+                    if (item.ageBonus) bonuses.age *= item.ageBonus;
+                    if (item.healBonus) bonuses.health *= item.healBonus;
+                    if (item.defenseBonus) bonuses.defense *= item.defenseBonus;
+                    if (item.exploreBonus) bonuses.explore *= item.exploreBonus;
+                    if (item.reputationBonus) bonuses.reputation *= item.reputationBonus;
+                    if (item.breakthroughBonus) bonuses.breakthrough *= item.breakthroughBonus;
+                }
+                if (item.healthBonus) bonuses.maxHealth += item.healthBonus;
+            });
+
+            return bonuses;
+        }
+
+        function getTotalBonus(type) {
+            const methodBonus = getMethodBonus(type);
+            const itemBonuses = getItemBonuses();
+            return methodBonus * itemBonuses[type];
+        }
+
+        function updateUI() {
+            const itemBonuses = getItemBonuses();
+            const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+
+            document.getElementById('health').textContent = `${gameState.health}/${maxHealthWithBonus}`;
+            document.getElementById('health-bar').style.width = `${(gameState.health / maxHealthWithBonus) * 100}%`;
+            document.getElementById('age').textContent = `${gameState.age}岁`;
+            document.getElementById('age-bar').style.width = `${(gameState.age / gameState.maxAge) * 100}%`;
+            document.getElementById('cultivation').textContent = gameState.cultivation;
+            document.getElementById('cultivation-bar').style.width = `${(gameState.cultivation / gameState.maxCultivation) * 100}%`;
+            document.getElementById('reputation').textContent = gameState.reputation;
+            document.getElementById('realm').textContent = gameState.realmNames[gameState.realm];
+
+            const currentMethod = gameState.currentMethod ? methodDatabase.find(m => m.id === gameState.currentMethod) : null;
+            const currentLevel = gameState.currentMethod ? (gameState.methodLevels[gameState.currentMethod] || 1) : 1;
+            document.getElementById('current-method').textContent = currentMethod ? `${currentMethod.name} (${currentLevel}层)` : '无';
+
+            document.getElementById('equipped-count').textContent = gameState.equippedItems.length;
+
+            const slotsContainer = document.getElementById('equipment-slots');
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const slot = document.createElement('div');
+                slot.className = `equip-slot ${i < gameState.equippedItems.length ? 'occupied' : 'empty'}`;
+                slot.textContent = i < gameState.equippedItems.length ? gameState.equippedItems[i].name : '空';
+                slotsContainer.appendChild(slot);
+            }
+
+            const totalCultivationBonus = getTotalBonus('cultivation');
+            const totalExploreBonus = getTotalBonus('explore');
+            const totalReputationBonus = getTotalBonus('reputation');
+            const totalDefenseBonus = getTotalBonus('defense');
+            const totalHealBonus = getTotalBonus('health');
+            const totalBreakthroughBonus = getTotalBonus('breakthrough');
+            const totalAgeBonus = getTotalBonus('age');
+            const healthIncrease = itemBonuses.maxHealth;
+
+            let bonusText = '当前加成：';
+            bonusText += `修为×${totalCultivationBonus.toFixed(1)} `;
+            bonusText += `探索×${totalExploreBonus.toFixed(1)} `;
+            bonusText += `威望×${totalReputationBonus.toFixed(1)} `;
+            bonusText += `受伤×${(totalDefenseBonus).toFixed(2)} `;
+            bonusText += `疗伤×${totalHealBonus.toFixed(1)} `;
+            bonusText += `突破×${totalBreakthroughBonus.toFixed(1)} `;
+            bonusText += `寿元×${totalAgeBonus.toFixed(2)} `;
+            if (healthIncrease > 0) {
+                bonusText += `<span>生命+${healthIncrease}</span>`;
+            }
+
+            document.getElementById('bonus-display').innerHTML = bonusText;
+        }
+
+        function addLog(message, type = 'normal') {
+            const logContent = document.getElementById('log-content');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            logContent.insertBefore(entry, logContent.firstChild);
+            if (logContent.children.length > 20) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationContent = notification.querySelector('.notification-content');
+            notificationContent.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 2000);
+        }
+
+        function showNewMethodAlert(method) {
+            const alert = document.getElementById('new-item-alert');
+            const title = alert.querySelector('.alert-title');
+            const name = document.getElementById('alert-item-name');
+            const desc = document.getElementById('alert-item-desc');
+
+            title.textContent = '🎉 恭喜获得新功法！';
+            name.textContent = method.name;
+            desc.textContent = method.desc;
+
+            alert.classList.add('show');
+        }
+
+        function showNewItemAlert(item) {
+            const alert = document.getElementById('new-item-alert');
+            const title = alert.querySelector('.alert-title');
+            const name = document.getElementById('alert-item-name');
+            const desc = document.getElementById('alert-item-desc');
+
+            title.textContent = '🎁 获得新法宝！';
+            name.textContent = item.name;
+            desc.textContent = item.desc;
+
+            alert.classList.add('show');
+        }
+
+        function closeNewAlert() {
+            document.getElementById('new-item-alert').classList.remove('show');
+        }
+
+        let currentEvent = null;
+
+        function triggerInteractiveEvent() {
+            if (gameState.isGameOver) return;
+
+            const event = interactiveEvents[Math.floor(Math.random() * interactiveEvents.length)];
+            currentEvent = event;
+
+            document.getElementById('event-title').textContent = event.title;
+            document.getElementById('event-description').textContent = event.description;
+
+            const optionsContainer = document.getElementById('event-options');
+            optionsContainer.innerHTML = '';
+
+            event.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'event-option';
+                optionDiv.onclick = () => handleEventChoice(index);
+
+                let html = `<div class="event-option-text">${option.text}</div>`;
+                if (option.riskText) {
+                    html += `<div class="event-option-risk">⚠️ ${option.riskText}</div>`;
+                }
+                if (option.rewardText) {
+                    html += `<div class="event-option-reward">✨ ${option.rewardText}</div>`;
+                }
+
+                optionDiv.innerHTML = html;
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            document.getElementById('event-modal').classList.add('show');
+        }
+
+        function handleEventChoice(choiceIndex) {
+            const option = currentEvent.options[choiceIndex];
+            document.getElementById('event-modal').classList.remove('show');
+
+            const defenseBonus = getTotalBonus('defense');
+            const exploreBonus = getTotalBonus('explore');
+            const reputationBonus = getTotalBonus('reputation');
+            const ageBonus = getTotalBonus('age');
+
+            let damage = 0;
+            let cultivationGain = 0;
+            let reputationGain = 0;
+            let healthGain = 0;
+            let ageLoss = 0;
+            let message = option.message;
+
+            if (option.reward) {
+                if (option.reward.cultivation) cultivationGain = Math.floor(option.reward.cultivation * exploreBonus);
+                if (option.reward.reputation) reputationGain = Math.floor(option.reward.reputation * reputationBonus);
+                if (option.reward.health) {
+                    healthGain = Math.floor(option.reward.health * getTotalBonus('health'));
+                }
+                if (option.reward.method) {
+                    let randomMethod;
+                    do {
+                        randomMethod = methodDatabase[Math.floor(Math.random() * methodDatabase.length)];
+                    } while (gameState.learnedMethods.includes(randomMethod.id));
+                    learnMethod(randomMethod);
+                    showNewMethodAlert(randomMethod);
+                    message += ` 习得${randomMethod.name}！`;
+                }
+                if (option.reward.item) {
+                    const randomItem = itemDatabase[Math.floor(Math.random() * itemDatabase.length)];
+                    addItem(randomItem);
+                    showNewItemAlert(randomItem);
+                    message += ` 获得${randomItem.name}！`;
+                }
+            }
+
+            if (option.risk) {
+                if (option.risk.health) damage = Math.floor(option.risk.health * defenseBonus);
+                if (option.risk.cultivation) gameState.cultivation = Math.max(0, gameState.cultivation - Math.floor(option.risk.cultivation * ageBonus));
+                if (option.risk.reputation) gameState.reputation = Math.max(0, gameState.reputation - option.risk.reputation);
+                if (option.risk.age) ageLoss = Math.floor(option.risk.age * ageBonus);
+            }
+
+            const itemBonuses = getItemBonuses();
+            const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+
+            gameState.health = Math.min(Math.max(0, gameState.health - damage + healthGain), maxHealthWithBonus);
+            gameState.cultivation += cultivationGain;
+            gameState.reputation += reputationGain;
+            gameState.age += Math.floor(Math.random() * 1.5) + 0.5 + ageLoss;
+
+            addLog(message, message.includes('重伤') ? 'bad' : 'good');
+
+            if (damage > 0) {
+                addLog(`受到伤害：-${damage}生命`, 'bad');
+            }
+            if (cultivationGain > 0) {
+                addLog(`修为增加：+${cultivationGain}`, 'good');
+            }
+            if (reputationGain > 0) {
+                addLog(`威望增加：+${reputationGain}`, 'good');
+            }
+            if (healthGain > 0) {
+                addLog(`生命恢复：+${healthGain}`, 'good');
+            }
+            if (ageLoss > 0) {
+                addLog(`寿元消耗：-${ageLoss}年`, 'bad');
+            }
+
+            if (gameState.cultivation >= gameState.maxCultivation) {
+                attemptBreakthrough();
+            }
+
+            if (gameState.health <= 0) {
+                gameOver('在探索中身受重伤，不幸陨落');
+            } else if (gameState.age >= gameState.maxAge) {
+                gameOver('寿元耗尽，寿终正寝');
+            }
+
+            updateUI();
+        }
+
+        function cultivate() {
+            if (gameState.isGameOver) return;
+
+            let baseGain = Math.floor(Math.random() * 30) + 20;
+            const totalBonus = getTotalBonus('cultivation');
+            const healthBonus = getTotalBonus('health');
+            const gain = Math.floor(baseGain * totalBonus);
+
+            gameState.cultivation += gain;
+
+            const itemBonuses = getItemBonuses();
+            const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+
+            const baseHeal = Math.floor(Math.random() * 8) + 3;
+            const heal = Math.floor(baseHeal * healthBonus);
+            gameState.health = Math.min(gameState.health + heal, maxHealthWithBonus);
+
+            if (gameState.cultivation >= gameState.maxCultivation) {
+                attemptBreakthrough();
+            } else {
+                const tip = cultivationTips[Math.floor(Math.random() * cultivationTips.length)];
+                addLog(`${tip}，修为+${gain}，生命+${heal}`, 'good');
+            }
+
+            checkAge();
+            updateUI();
+        }
+
+        function practiceMethod() {
+            if (gameState.isGameOver) return;
+
+            if (!gameState.currentMethod) {
+                showNotification('请先选择主修功法');
+                return;
+            }
+
+            const method = methodDatabase.find(m => m.id === gameState.currentMethod);
+            const currentLevel = gameState.methodLevels[gameState.currentMethod] || 1;
+
+            if (currentLevel >= 9) {
+                showNotification('功法已修炼至圆满');
+                addLog(`${method.name}已达圆满境界`, 'special');
+                return;
+            }
+
+            const successRate = 0.4 + (currentLevel * 0.05);
+            const ageBonus = getTotalBonus('age');
+            gameState.age += Math.floor(Math.random() * 1.2) + 0.8;
+
+            if (Math.random() < successRate) {
+                gameState.methodLevels[gameState.currentMethod] = currentLevel + 1;
+                const newLevel = gameState.methodLevels[gameState.currentMethod];
+                addLog(`恭喜！${method.name}突破至${newLevel}层`, 'special');
+                showNotification(`${method.name}提升至${newLevel}层`);
+            } else {
+                addLog(`修炼${method.name}未能突破`, 'normal');
+            }
+
+            if (gameState.age >= gameState.maxAge) {
+                gameOver('寿元耗尽，寿终正寝');
+            }
+
+            updateUI();
+        }
+
+        function attemptBreakthrough() {
+            const totalBonus = getTotalBonus('breakthrough');
+            const successRate = 0.8 + (gameState.realm * 0.01);
+            
+            if (Math.random() < successRate * totalBonus) {
+                gameState.realm++;
+                gameState.maxCultivation = Math.floor(gameState.maxCultivation * 1.6);
+                gameState.cultivation = 0;
+                gameState.maxAge += 30;
+                addLog(`恭喜！突破到${gameState.realmNames[gameState.realm]}！寿元+30年`, 'special');
+                showNotification('突破成功！');
+            } else {
+                const defenseBonus = getTotalBonus('defense');
+                gameState.cultivation = Math.floor(gameState.maxCultivation * 0.3);
+                const damage = Math.floor(12 * defenseBonus);
+                gameState.health -= damage;
+                addLog(`突破失败，元气大伤，生命-${damage}`, 'bad');
+                if (gameState.health <= 0) {
+                    gameOver('突破失败，走火入魔而死');
+                }
+            }
+            checkAge();
+        }
+
+        function explore() {
+            if (gameState.isGameOver) return;
+
+            const interactiveChance = 0.4;
+            if (Math.random() < interactiveChance) {
+                gameState.age += Math.floor(Math.random() * 1.5) + 0.5;
+                triggerInteractiveEvent();
+                return;
+            }
+            
+            const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+            const defenseBonus = getTotalBonus('defense');
+            const exploreBonus = getTotalBonus('explore');
+            const reputationBonus = getTotalBonus('reputation');
+            
+            const ageBonus = getTotalBonus('age');
+            gameState.age += Math.floor(Math.random() * 2) + 1;
+            
+            let damage = 0;
+            let cultivationGain = 0;
+            let reputationGain = 0;
+            let healthGain = 0;
+
+            if (event.health) damage = Math.floor(event.health * defenseBonus);
+            if (event.cultivation) cultivationGain = Math.floor(event.cultivation * exploreBonus);
+            if (event.reputation) reputationGain = Math.floor(event.reputation * reputationBonus);
+            if (event.maxCultivation) gameState.maxCultivation += Math.floor(event.maxCultivation * exploreBonus);
+
+            switch(event.type) {
+                case 'help':
+                    healthGain = event.health || 25;
+                    reputationGain = event.reputation || 20;
+                    addItem(itemDatabase[Math.floor(Math.random() * 3)]);
+                    addLog(event.text + `，生命+${healthGain}，威望+${reputationGain}，获得丹药`, 'good');
+                    break;
+                case 'spring':
+                    cultivationGain = event.cultivation || 80;
+                    healthGain = event.health || 25;
+                    addLog(event.text + `，修为+${cultivationGain}，生命+${healthGain}`, 'good');
+                    break;
+                case 'beast':
+                    damage = event.health || 18;
+                    addLog(event.text + `，生命-${damage}`, 'bad');
+                    break;
+                case 'book':
+                    cultivationGain = event.cultivation || 120;
+                    addLog(event.text + `，修为+${cultivationGain}`, 'good');
+                    break;
+                case 'ambush':
+                    damage = event.health || 25;
+                    const reputationLoss = event.reputation || 12;
+                    gameState.reputation -= reputationLoss;
+                    addLog(event.text + `，生命-${damage}，威望-${reputationLoss}`, 'bad');
+                    break;
+                case 'treasure':
+                    const treasureIndex = Math.floor(Math.random() * itemDatabase.length);
+                    const treasureItem = itemDatabase[treasureIndex];
+                    addItem(treasureItem);
+                    showNewItemAlert(treasureItem);
+                    addLog(event.text + `，获得${treasureItem.name}`, 'special');
+                    break;
+                case 'forbidden':
+                    damage = event.health || 22;
+                    const cultLoss = event.cultivation || 20;
+                    gameState.cultivation = Math.max(0, gameState.cultivation - cultLoss);
+                    addLog(event.text + `，生命-${damage}，修为-${cultLoss}`, 'bad');
+                    break;
+                case 'competition':
+                    reputationGain = event.reputation || 40;
+                    addLog(event.text + `，威望+${reputationGain}`, 'good');
+                    break;
+                case 'demon':
+                    const demLoss = event.cultivation || 25;
+                    gameState.cultivation = Math.max(0, gameState.cultivation - demLoss);
+                    damage = event.health || 12;
+                    addLog(event.text + `，修为-${demLoss}，生命-${damage}`, 'bad');
+                    break;
+                case 'immortal':
+                    cultivationGain = event.cultivation || 100;
+                    addLog(event.text + `，修为+${cultivationGain}`, 'special');
+                    break;
+                case 'market':
+                    healthGain = event.health || 35;
+                    cultivationGain = event.cultivation || 30;
+                    addLog(event.text + `，生命+${healthGain}，修为+${cultivationGain}`, 'good');
+                    break;
+                case 'sparring':
+                    cultivationGain = event.cultivation || 60;
+                    reputationGain = event.reputation || 25;
+                    addLog(event.text + `，修为+${cultivationGain}，威望+${reputationGain}`, 'good');
+                    break;
+                case 'cave':
+                    cultivationGain = event.cultivation || 90;
+                    reputationGain = event.reputation || 20;
+                    addLog(event.text + `，修为+${cultivationGain}，威望+${reputationGain}`, 'good');
+                    break;
+                case 'battle':
+                    damage = event.health || 20;
+                    addLog(event.text + `，生命-${damage}`, 'bad');
+                    break;
+                case 'bag':
+                    reputationGain = event.reputation || 30;
+                    addItem(itemDatabase[Math.floor(Math.random() * 6)]);
+                    addLog(event.text + `，威望+${reputationGain}，获得物品`, 'good');
+                    break;
+                case 'alchemy':
+                    cultivationGain = event.cultivation || 50;
+                    reputationGain = event.reputation || 15;
+                    addItem(itemDatabase[Math.floor(Math.random() * 3)]);
+                    addLog(event.text + `，修为+${cultivationGain}，威望+${reputationGain}，获得丹药`, 'good');
+                    break;
+                case 'secret':
+                    cultivationGain = event.cultivation || 100;
+                    healthGain = event.health || 30;
+                    reputationGain = event.reputation || 25;
+                    addLog(event.text + `，修为+${cultivationGain}，生命+${healthGain}，威望+${reputationGain}`, 'special');
+                    break;
+                case 'tribulation':
+                    damage = event.health || 28;
+                    const triLoss = event.cultivation || 25;
+                    gameState.cultivation = Math.max(0, gameState.cultivation - triLoss);
+                    addLog(event.text + `，生命-${damage}，修为-${triLoss}`, 'bad');
+                    break;
+                case 'beast_kill':
+                    reputationGain = event.reputation || 30;
+                    healthGain = event.health || 15;
+                    addLog(event.text + `，威望+${reputationGain}，生命+${healthGain}`, 'good');
+                    break;
+                case 'herb':
+                    cultivationGain = event.cultivation || 70;
+                    healthGain = event.health || 25;
+                    addLog(event.text + `，修为+${cultivationGain}，生命+${healthGain}`, 'good');
+                    break;
+                case 'demon_fight':
+                    damage = event.health || 22;
+                    reputationGain = event.reputation || 18;
+                    addLog(event.text + `，生命-${damage}，威望+${reputationGain}`, 'bad');
+                    break;
+                case 'auction':
+                    reputationGain = event.reputation || 50;
+                    const auctionItem = itemDatabase[4 + Math.floor(Math.random() * 26)];
+                    addItem(auctionItem);
+                    showNewItemAlert(auctionItem);
+                    addLog(event.text + `，威望+${reputationGain}，获得法宝`, 'special');
+                    break;
+                case 'ruins':
+                    cultivationGain = event.cultivation || 120;
+                    reputationGain = event.reputation || 30;
+                    addLog(event.text + `，修为+${cultivationGain}，威望+${reputationGain}`, 'special');
+                    break;
+                case 'rift':
+                    damage = event.health || 25;
+                    const riftLoss = event.cultivation || 18;
+                    gameState.cultivation = Math.max(0, gameState.cultivation - riftLoss);
+                    addLog(event.text + `，生命-${damage}，修为-${riftLoss}`, 'bad');
+                    break;
+                case 'loose_cultivator':
+                    let randomMethod;
+                    do {
+                        randomMethod = methodDatabase[Math.floor(Math.random() * methodDatabase.length)];
+                    } while (gameState.learnedMethods.includes(randomMethod.id));
+                    learnMethod(randomMethod);
+                    showNewMethodAlert(randomMethod);
+                    addLog(event.text + `，习得${randomMethod.name}`, 'special');
+                    break;
+                case 'assembly':
+                    reputationGain = event.reputation || 55;
+                    cultivationGain = event.cultivation || 40;
+                    addLog(event.text + `，威望+${reputationGain}，修为+${cultivationGain}`, 'good');
+                    break;
+                case 'mine':
+                    reputationGain = event.reputation || 35;
+                    addItem(itemDatabase[5]);
+                    addLog(event.text + `，威望+${reputationGain}，获得灵石`, 'good');
+                    break;
+                case 'beast_wave':
+                    damage = event.health || 30;
+                    addLog(event.text + `，生命-${damage}`, 'bad');
+                    break;
+                case 'illusion':
+                    cultivationGain = event.cultivation || 80;
+                    healthGain = event.health || 8;
+                    addLog(event.text + `，修为+${cultivationGain}，生命+${healthGain}`, 'good');
+                    break;
+            }
+            
+            const itemBonuses = getItemBonuses();
+            const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+            gameState.health = Math.min(Math.max(0, gameState.health - damage + healthGain), maxHealthWithBonus);
+            gameState.cultivation += cultivationGain;
+            gameState.reputation += reputationGain;
+            
+            if (gameState.cultivation >= gameState.maxCultivation) {
+                attemptBreakthrough();
+            }
+            
+            if (gameState.health <= 0) {
+                gameOver('在探索中身受重伤，不幸陨落');
+            } else if (gameState.age >= gameState.maxAge) {
+                gameOver('寿元耗尽，寿终正寝');
+            }
+            
+            updateUI();
+        }
+
+        function rest() {
+            if (gameState.isGameOver) return;
+            
+            let baseHeal = Math.floor(Math.random() * 30) + 18;
+            const totalBonus = getTotalBonus('health');
+            const heal = Math.floor(baseHeal * totalBonus);
+            
+            const ageBonus = getTotalBonus('age');
+            gameState.age += Math.floor(Math.random() * 1.5) + 0.5;
+            
+            const itemBonuses = getItemBonuses();
+            const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+            gameState.health = Math.min(gameState.health + heal, maxHealthWithBonus);
+            addLog(`调息疗伤，恢复${heal}点生命`, 'good');
+            
+            if (gameState.age >= gameState.maxAge) {
+                gameOver('寿元耗尽，寿终正寝');
+            }
+            
+            updateUI();
+        }
+
+        function addItem(item) {
+            gameState.items.push({...item});
+        }
+
+        function learnMethod(method) {
+            if (!gameState.learnedMethods.includes(method.id)) {
+                gameState.learnedMethods.push(method.id);
+            }
+        }
+
+        function showItems() {
+            const itemsList = document.getElementById('items-list');
+            itemsList.innerHTML = '';
+            
+            if (gameState.items.length === 0) {
+                itemsList.innerHTML = '<div style="text-align:center; color:#888; padding: 20px;">背包为空</div>';
+            } else {
+                gameState.items.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    
+                    const isEquipped = gameState.equippedItems.some(ei => ei.id === item.id);
+                    const equippedClass = isEquipped ? 'equipped' : '';
+                    
+                    let effectText = '';
+                    if (item.exploreBonus) effectText += `探索收益+${Math.round((item.exploreBonus - 1) * 100)}% `;
+                    if (item.defenseBonus) effectText += `受伤减少${Math.round((1 - item.defenseBonus) * 100)}% `;
+                    if (item.cultivationBonus) effectText += `修为获取+${Math.round((item.cultivationBonus - 1) * 100)}% `;
+                    if (item.reputationBonus) effectText += `威望获取+${Math.round((item.reputationBonus - 1) * 100)}% `;
+                    if (item.breakthroughBonus) effectText += `突破成功率+${Math.round((item.breakthroughBonus - 1) * 100)}% `;
+                    if (item.healthBonus) effectText += `生命上限+${item.healthBonus} `;
+                    if (item.allBonus) effectText += `全属性+${Math.round((item.allBonus - 1) * 100)}% `;
+                    
+                    itemDiv.innerHTML = `
+                        <div class="item-header">
+                            <div class="item-name ${equippedClass}">${item.name}${isEquipped ? ' (已装备)' : ''}</div>
+                        </div>
+                        <div class="item-desc">${item.desc}</div>
+                        ${effectText ? `<div class="item-effects">${effectText}</div>` : ''}
+                        <div class="btn-group">
+                            ${item.effect === 'equip' ? 
+                                `<button class="equip-btn" onclick="equipItem(${index})">${isEquipped ? '卸下' : '装备'}</button>` :
+                                `<button class="use-btn" onclick="useItem(${index})">使用</button>`
+                            }
+                        </div>
+                    `;
+                    itemsList.appendChild(itemDiv);
+                });
+            }
+            
+            document.getElementById('items-modal').classList.add('show');
+        }
+
+        function equipItem(index) {
+            const item = gameState.items[index];
+            
+            const equippedIndex = gameState.equippedItems.findIndex(ei => ei.id === item.id);
+            if (equippedIndex !== -1) {
+                gameState.equippedItems.splice(equippedIndex, 1);
+                addLog(`卸下${item.name}`, 'normal');
+            } else {
+                if (item.effect === 'equip' && gameState.equippedItems.length < 10) {
+                    gameState.equippedItems.push(item);
+                    addLog(`装备${item.name}`, 'good');
+                    showNotification(`已装备${item.name}`);
+                } else if (gameState.equippedItems.length >= 10) {
+                    showNotification('最多装备10件法宝');
+                    return;
+                }
+            }
+            
+            showItems();
+            updateUI();
+        }
+
+        function useItem(index) {
+            const item = gameState.items[index];
+            
+            switch(item.effect) {
+                case 'health':
+                    const itemBonuses = getItemBonuses();
+                    const maxHealthWithBonus = gameState.maxHealth + itemBonuses.maxHealth;
+                    gameState.health = Math.min(gameState.health + item.value, maxHealthWithBonus);
+                    addLog(`使用${item.name}，恢复${item.value}点生命`, 'good');
+                    break;
+                case 'cultivation':
+                    gameState.cultivation += item.value;
+                    addLog(`使用${item.name}，修为+${item.value}`, 'good');
+                    if (gameState.cultivation >= gameState.maxCultivation) {
+                        attemptBreakthrough();
+                    }
+                    break;
+                case 'age':
+                    gameState.maxAge += item.value;
+                    addLog(`使用${item.name}，寿元+${item.value}年`, 'special');
+                    break;
+                case 'wealth':
+                    gameState.reputation += item.reputationBonus || 60;
+                    addLog(`使用${item.name}，威望+${item.reputationBonus || 60}`, 'good');
+                    break;
+                default:
+                    addLog(`获得${item.name}`, 'normal');
+            }
+            
+            gameState.items.splice(index, 1);
+            showItems();
+            updateUI();
+        }
+
+        function showMethods() {
+            const methodsList = document.getElementById('methods-list');
+            methodsList.innerHTML = '';
+            
+            const sortedMethods = [...methodDatabase].sort((a, b) => {
+                const aLearned = gameState.learnedMethods.includes(a.id);
+                const bLearned = gameState.learnedMethods.includes(b.id);
+                if (aLearned && !bLearned) return -1;
+                if (!aLearned && bLearned) return 1;
+                return a.id - b.id;
+            });
+
+            sortedMethods.forEach(method => {
+                const methodDiv = document.createElement('div');
+                const isActive = gameState.currentMethod === method.id;
+                const isLearned = gameState.learnedMethods.includes(method.id);
+                const level = gameState.methodLevels[method.id] || 1;
+
+                methodDiv.className = `method ${isActive ? 'active' : ''}`;
+
+                let effectText = method.effects.map(e => e).join('，');
+                const levelText = isLearned ? ` <span style="color: #ffd700; font-weight: bold;">${level}层</span>` : '';
+
+                const header = document.createElement('div');
+                header.className = 'method-section';
+                header.innerHTML = `
+                    <div class="method-name">${method.name}${isActive ? ' (当前修炼)' : ''}${levelText}</div>
+                    ${isLearned ? '<span class="method-badge">已习得</span>' : ''}
+                `;
+
+                methodDiv.appendChild(header);
+
+                const desc = document.createElement('div');
+                desc.className = 'method-desc';
+                desc.textContent = method.desc;
+                methodDiv.appendChild(desc);
+
+                const effects = document.createElement('div');
+                effects.className = 'item-effects';
+                effects.textContent = effectText;
+                methodDiv.appendChild(effects);
+
+                if (isLearned) {
+                    if (level < 9) {
+                        const levelProgress = document.createElement('div');
+                        levelProgress.style.color = '#888';
+                        levelProgress.style.fontSize = '0.8rem';
+                        levelProgress.style.marginTop = '5px';
+                        levelProgress.textContent = `当前层数：${level}/9层，每层提升10%效果`;
+                        methodDiv.appendChild(levelProgress);
+                    } else {
+                        const maxLevel = document.createElement('div');
+                        maxLevel.style.color = '#4CAF50';
+                        maxLevel.style.fontSize = '0.8rem';
+                        maxLevel.style.marginTop = '5px';
+                        maxLevel.textContent = '功法已圆满，效果提升80%';
+                        methodDiv.appendChild(maxLevel);
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = 'select-btn';
+                    btn.textContent = isActive ? '修炼中' : '选择修炼';
+                    btn.onclick = () => selectMethod(method.id);
+                    methodDiv.appendChild(btn);
+                } else {
+                    const notLearned = document.createElement('div');
+                    notLearned.style.color = '#888';
+                    notLearned.style.fontSize = '0.85rem';
+                    notLearned.style.marginTop = '5px';
+                    notLearned.textContent = '未习得 - 通过探索获得';
+                    methodDiv.appendChild(notLearned);
+                }
+
+                methodsList.appendChild(methodDiv);
+            });
+            
+            document.getElementById('methods-modal').classList.add('show');
+        }
+
+        function selectMethod(methodId) {
+            if (gameState.learnedMethods.includes(methodId)) {
+                const method = methodDatabase.find(m => m.id === methodId);
+                gameState.currentMethod = methodId;
+                if (!gameState.methodLevels[methodId]) {
+                    gameState.methodLevels[methodId] = 1;
+                }
+                const level = gameState.methodLevels[methodId];
+                addLog(`开始修炼${method.name}（${level}层）`, 'good');
+                showNotification(`已切换至${method.name}`);
+                showMethods();
+                updateUI();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function checkAge() {
+            const ageBonus = getTotalBonus('age');
+            gameState.age += Math.floor(Math.random() * 1.5) + 0.5;
+            if (gameState.age >= gameState.maxAge) {
+                gameOver('寿元耗尽，寿终正寝');
+            }
+        }
+
+        function gameOver(reason) {
+            gameState.isGameOver = true;
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <div class="game-over">
+                    <h2>游戏结束</h2>
+                    <p>${reason}</p>
+                    <p>最终境界: ${gameState.realmNames[gameState.realm]}</p>
+                    <p>修为: ${gameState.cultivation}</p>
+                    <p>威望: ${gameState.reputation}</p>
+                    <p>修得功法: ${gameState.learnedMethods.length}种</p>
+                    <button class="restart-btn" onclick="restartGame()">重新开始</button>
+                </div>
+            `;
+        }
+
+        function restartGame() {
+            gameState.health = 100;
+            gameState.maxHealth = 100;
+            gameState.age = 16;
+            gameState.maxAge = 150;
+            gameState.cultivation = 0;
+            gameState.maxCultivation = 100;
+            gameState.reputation = 0;
+            gameState.realm = 0;
+            gameState.items = [];
+            gameState.equippedItems = [];
+            gameState.currentMethod = null;
+            gameState.learnedMethods = [1];
+            gameState.methodLevels = { 1: 1 };
+            gameState.isGameOver = false;
+
+            location.reload();
+        }
+
+        gameState.learnedMethods.push(1);
+        gameState.methodLevels[1] = 1;
+        addLog('欢迎来到修仙世界！踏上修仙之路，追求长生不老之道。', 'special');
+        addLog('初始已习得"基础吐纳法"，可在功法图鉴中查看', 'special');
+        addLog('点击"修炼功法"可以提升功法层数，最高9层', 'special');
+        updateUI();
+    </script>
+</body>
+</html>
